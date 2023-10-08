@@ -69,14 +69,13 @@ def createDocument(cur, docId, docText, docTitle, docDate, docCat):
     # 3.2 For each term identified, check if the term already exists in the database
     # 3.3 In case the term does not exist, insert it into the database
     translator = str.maketrans('', '', string.punctuation)
-    term_list = (str(docText).translate(translator)).split(' ')
+    term_list = [term.lower() for term in (str(docText).translate(translator)).split(' ')]
+    
     for term in term_list:
-        sql = "SELECT * FROM term WHERE term = %(term)s"
-        cur.execute(sql,{"term":term})
-        recset2 = cur.fetchall()
-        if not recset2:
-            sql = "INSERT INTO term (term, num_chars) VALUES (%(term)s,%(num_chars)s)" 
-            cur.execute(sql,{"term":term,"num_chars":len(term)})
+        sql = """INSERT INTO term (term, num_chars) 
+                 SELECT %(term)s,%(num_chars)s 
+                 WHERE NOT EXISTS (SELECT * FROM term WHERE term = %(term)s)"""
+        cur.execute(sql,{"term":term,"num_chars":len(term)})
 
     # 4 Update the index
     # 4.1 Find all terms that belong to the document
@@ -88,7 +87,7 @@ def createDocument(cur, docId, docText, docTitle, docDate, docCat):
             dic[term] += 1
         else:
             dic[term] = 1
-
+    
     for term in dic:
         sql = "INSERT INTO index (doc_number, term, count) VALUES (%(doc_id)s,%(term)s,%(count)s)"
         cur.execute(sql,{"doc_id":docId,"term":term,"count":dic[term]})
@@ -108,12 +107,9 @@ def deleteDocument(cur, docId):
     # 1.2 Check if there are no more occurrences of the term in another document. 
     #     If this happens, delete the term from the database.
     for row in recset:
-        sql = "SELECT term FROM index WHERE term = %(term)s"
+        sql = """DELETE FROM term WHERE term = %(term)s AND 
+                NOT EXISTS (SELECT term FROM index Where term = %(term)s)"""
         cur.execute(sql,{"term":row["term"]})
-        termset = cur.fetchall()
-        if not termset:
-            sql = "DELETE FROM term WHERE term = %(term)s"
-            cur.execute(sql,{"term":row["term"]})
     
     # 2 Delete the document from the database
     sql = "DELETE FROM document WHERE doc_number = %(docId)s"
