@@ -1,13 +1,13 @@
 #-------------------------------------------------------------------------
-# AUTHOR: your name
-# FILENAME: title of the source file
-# SPECIFICATION: description of the program
-# FOR: CS 4250- Assignment #2
-# TIME SPENT: how long it took you to complete the assignment
+# AUTHOR: Michael Phu
+# FILENAME: index.py
+# SPECIFICATION: Driver program from db_connection.py.
+# FOR: CS 4250 - Assignment #2
+# TIME SPENT: 3 Hours
 #-----------------------------------------------------------*/
 
 #importing some Python libraries
-from db_connection_solution import *
+from db_connection import *
 
 if __name__ == '__main__':
 
@@ -16,6 +16,7 @@ if __name__ == '__main__':
 
     # Getting a cursor
     cur = conn.cursor()
+    cur.execute("SET search_path TO 'A2',public")
 
     #print a menu
     print("")
