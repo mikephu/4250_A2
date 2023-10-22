@@ -10,6 +10,7 @@
 #importing some Python libraries
 from pymongo import MongoClient  # import mongo client to connect
 import string
+from dateutil.parser import parse
 
 def connectDataBase():
 
@@ -47,7 +48,8 @@ def createDocument(db, docId, docText, docTitle, docDate, docCat):
         terms.append(dic2)
         
     # Parse date... 
-
+    dt = parse(docDate)
+    dt = dt.strftime('%Y-%m-%d')
 
     # Create document object 
     document = {
@@ -55,7 +57,7 @@ def createDocument(db, docId, docText, docTitle, docDate, docCat):
         "text": docText, 
         "title": docTitle,
         "num_chars": int(num_chars),
-        "date": docDate,
+        "date": dt,
         "category": docCat,
         "terms": terms 
     }
